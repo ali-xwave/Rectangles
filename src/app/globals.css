@@ -1,42 +1,21 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+.headerContainer {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Adds space between the links */
+  padding: 10px;
+  background-color: #f0f0f0; /* Background color for the container */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
+.link {
   text-decoration: none;
+  color: white;
+  background-color: #38B6FF; /* Background color for the links */
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: background-color 0.3s;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.link:hover {
+  background-color: #1d8fc9; /* Changes color on hover */
 }
