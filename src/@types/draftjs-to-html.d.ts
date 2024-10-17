@@ -1,26 +1,31 @@
-// src/declarations.d.ts
-
-// src/@types/draftjs-to-html.d.ts
 declare module "draftjs-to-html" {
   import { ContentState } from "draft-js";
 
+  export interface DraftToHtmlOptions {
+    [key: string]: unknown; // Replace any with a more specific type
+  }
+
   export default function draftToHtml(
     contentState: ContentState,
-    options?: any
+    options?: DraftToHtmlOptions
   ): string;
 }
 
-// src/@types/react-draft-wysiwyg.d.ts
 declare module "react-draft-wysiwyg" {
   import { Component } from "react";
   import { EditorState } from "draft-js";
+
+  export interface ToolbarOptions {
+    options?: string[];
+    [key: string]: unknown; // Dynamic key support
+  }
 
   export interface EditorProps {
     editorState: EditorState;
     onEditorStateChange: (editorState: EditorState) => void;
     wrapperClassName?: string;
     editorClassName?: string;
-    toolbar?: any; // You can specify a more precise type here if needed
+    toolbar?: ToolbarOptions;
     editorStyle?: React.CSSProperties;
     toolbarClassName?: string;
   }
@@ -28,7 +33,6 @@ declare module "react-draft-wysiwyg" {
   export class Editor extends Component<EditorProps> {}
 }
 
-// src/@types/draft-js.d.ts
 declare module "draft-js" {
   import { ContentState, EditorState } from "draft-js";
 
@@ -50,7 +54,7 @@ declare module "draft-js" {
       }>;
       data: object;
     }>;
-    entityMap: { [key: string]: any };
+    entityMap: Record<string, unknown>; // Use Record type instead of any
   }
 
   export function convertToRaw(
@@ -62,21 +66,21 @@ declare module "draft-js" {
   ): ContentState;
 
   export class EditorState {
-    static createWithContent(contentStateWithText: ContentState) {
-      throw new Error('Method not implemented.');
-    }
-    static push(editorState: EditorState, contentStateWithText: ContentState, arg2: string) {
-      throw new Error('Method not implemented.');
-    }
+    static createWithContent(contentStateWithText: ContentState): EditorState;
+    static push(
+      editorState: EditorState,
+      contentStateWithText: ContentState,
+      arg2: string
+    ): EditorState;
     static createEmpty(): EditorState;
     getCurrentContent(): ContentState;
-    getSelection(): any;
+    getSelection(): unknown;
   }
 
   export namespace Modifier {
     function insertText(
       contentState: ContentState,
-      selectionState: any,
+      selectionState: unknown, // Specify unknown for selectionState
       text: string,
       inlineStyle?: string | null,
       entityKey?: string | null
