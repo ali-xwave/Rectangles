@@ -1,15 +1,15 @@
 .headerContainer {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Adds space between the links */
+  gap: 20px;
   padding: 10px;
-  background-color: #f0f0f0; /* Background color for the container */
+  background-color: #f0f0f0;
 }
 
 .link {
   text-decoration: none;
   color: white;
-  background-color: #38B6FF; /* Background color for the links */
+  background-color: #d3efff;
   padding: 10px 20px;
   border-radius: 5px;
   font-weight: bold;
@@ -17,5 +17,29 @@
 }
 
 .link:hover {
-  background-color: #1d8fc9; /* Changes color on hover */
+  background-color: #1d8fc9;
+}
+
+.button-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.button-container button {
+  background-color: #38b6ff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+.button-container button:hover {
+  background-color: #309fcc;
 }

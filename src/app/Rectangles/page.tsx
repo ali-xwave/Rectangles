@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import CanvasDraw from "react-canvas-draw";
-
 type Rectangle = {
   startX: number;
   startY: number;
@@ -16,12 +15,11 @@ const DrawPage: React.FC = () => {
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 300, height: 300 });
   const canvasOverlayRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
-
   const [isDrawing, setIsDrawing] = useState(false);
   const startX = useRef(0);
   const startY = useRef(0);
-  const [rectangles, setRectangles] = useState<Rectangle[]>([]); // Store rectangles
-  const [color, setColor] = useState<string>("black"); // Track selected color
+  const [rectangles, setRectangles] = useState<Rectangle[]>([]);
+  const [color, setColor] = useState<string>("black");
 
   useEffect(() => {
     const canvas = canvasOverlayRef.current;
@@ -29,9 +27,7 @@ const DrawPage: React.FC = () => {
       canvas.width = canvasDimensions.width;
       canvas.height = canvasDimensions.height;
       const context = canvas.getContext("2d");
-      if (context) {
-        contextRef.current = context;
-      }
+      contextRef.current = context;
     }
   }, [canvasDimensions]);
 
@@ -39,7 +35,7 @@ const DrawPage: React.FC = () => {
     if (canvasRef.current) {
       canvasRef.current.clear();
     }
-    setRectangles([]); // Clear rectangles
+    setRectangles([]);
     if (contextRef.current) {
       contextRef.current.clearRect(0, 0, canvasDimensions.width, canvasDimensions.height);
     }
@@ -47,17 +43,19 @@ const DrawPage: React.FC = () => {
 
   const undoLast = () => {
     if (rectangles.length > 0) {
-      const newRectangles = rectangles.slice(0, -1); // Remove last rectangle
+      const newRectangles = rectangles.slice(0, -1);
       setRectangles(newRectangles);
+      redrawRectangles(newRectangles);
+    }
+  };
 
-      // Clear the canvas overlay and redraw remaining rectangles
-      if (contextRef.current) {
-        contextRef.current.clearRect(0, 0, canvasDimensions.width, canvasDimensions.height);
-        newRectangles.forEach((rect) => {
-          contextRef.current!.strokeStyle = rect.color;
-          contextRef.current?.strokeRect(rect.startX, rect.startY, rect.width, rect.height);
-        });
-      }
+  const redrawRectangles = (rectanglesToRedraw: Rectangle[]) => {
+    if (contextRef.current) {
+      contextRef.current.clearRect(0, 0, canvasDimensions.width, canvasDimensions.height);
+      rectanglesToRedraw.forEach((rect) => {
+        contextRef.current!.strokeStyle = rect.color;
+        contextRef.current?.strokeRect(rect.startX, rect.startY, rect.width, rect.height);
+      });
     }
   };
 
@@ -67,11 +65,11 @@ const DrawPage: React.FC = () => {
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {
-          setImageSrc(reader.result as string);
           const img = new Image();
           img.src = reader.result as string;
           img.onload = () => {
-            setCanvasDimensions({ width: img.width + 10, height: img.height + 10 });
+            setImageSrc(reader.result as string);
+            setCanvasDimensions({ width: img.width, height: img.height });
           };
         }
       };
@@ -87,27 +85,22 @@ const DrawPage: React.FC = () => {
       const ctx = tempCanvas.getContext("2d");
 
       if (ctx) {
-        // Draw the background image if it exists
         if (imageSrc) {
           const backgroundImg = new Image();
           backgroundImg.src = imageSrc;
           backgroundImg.onload = () => {
             ctx.drawImage(backgroundImg, 0, 0, canvasDimensions.width, canvasDimensions.height);
-
-            // Draw the user's drawing on top
             const drawing = canvasRef.current?.getDataURL();
             if (drawing) {
               const drawingImg = new Image();
               drawingImg.src = drawing;
               drawingImg.onload = () => {
                 ctx.drawImage(drawingImg, 0, 0, canvasDimensions.width, canvasDimensions.height);
-
                 rectangles.forEach((rect) => {
                   ctx.strokeStyle = rect.color;
                   ctx.lineWidth = 2;
                   ctx.strokeRect(rect.startX, rect.startY, rect.width, rect.height);
                 });
-
                 const finalImage = tempCanvas.toDataURL("image/png");
                 const link = document.createElement("a");
                 link.href = finalImage;
@@ -140,16 +133,8 @@ const DrawPage: React.FC = () => {
       const width = currentX - startX.current;
       const height = currentY - startY.current;
 
-      // Clear the overlay before drawing a new rectangle preview
       contextRef.current.clearRect(0, 0, canvasDimensions.width, canvasDimensions.height);
-
-      // Redraw all previously drawn rectangles
-      rectangles.forEach((rect) => {
-        contextRef.current!.strokeStyle = rect.color;
-        contextRef.current?.strokeRect(rect.startX, rect.startY, rect.width, rect.height);
-      });
-
-      // Draw the new rectangle as a preview
+      redrawRectangles(rectangles);
       contextRef.current.strokeStyle = color;
       contextRef.current.lineWidth = 5;
       contextRef.current.strokeRect(startX.current, startY.current, width, height);
@@ -157,7 +142,7 @@ const DrawPage: React.FC = () => {
   };
 
   const stopDrawingRectangle = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return; // Prevent adding rectangle if not drawing
+    if (!isDrawing) return;
     setIsDrawing(false);
     const canvasBounds = canvasOverlayRef.current?.getBoundingClientRect();
     if (canvasBounds) {
@@ -165,8 +150,6 @@ const DrawPage: React.FC = () => {
       const currentY = event.clientY - canvasBounds.top;
       const width = currentX - startX.current;
       const height = currentY - startY.current;
-
-      // Save the drawn rectangle with the selected color
       setRectangles((prev) => [
         ...prev,
         { startX: startX.current, startY: startY.current, width, height, color },
@@ -174,73 +157,60 @@ const DrawPage: React.FC = () => {
     }
   };
 
-  // Function to set rectangle color
   const selectColor = (newColor: string) => {
     setColor(newColor);
   };
 
   return (
     <div style={{ padding: "20px" }}>
-      {/* Image Upload */}
       <label htmlFor="image-upload">Upload Background Image: </label>
       <input id="image-upload" type="file" accept="image/*" onChange={handleImageUpload} />
 
       {/* Color Buttons */}
-      <div style={{ marginTop: "10px" }}>
-        <button onClick={() => selectColor("red")} style={{ backgroundColor: "red", color: "white", marginRight: "5px" }}>
-          Red
-        </button>
-        <button onClick={() => selectColor("green")} style={{ backgroundColor: "green", color: "white", marginRight: "5px" }}>
-          Green
-        </button>
-        <button onClick={() => selectColor("blue")} style={{ backgroundColor: "blue", color: "white", marginRight: "5px" }}>
-          Blue
-        </button>
-        <button onClick={() => selectColor("#C71585")} style={{ backgroundColor: "#C71585", color: "white", marginRight: "5px" }}>
-          Pink
-        </button>
-        <button onClick={() => selectColor("#8B4513")} style={{ backgroundColor: "#8B4513", color: "white", marginRight: "5px" }}>
-          Brown
-        </button>
+      <div>
+        <div className="button-container">
+          <button onClick={() => selectColor("red")}>Main Statement</button>
+          <button onClick={() => selectColor("green")}>Child Statement</button>
+          <button onClick={() => selectColor("blue")}>Question</button>
+          <button onClick={() => selectColor("#8B4513")}>Image</button>
+          <button onClick={() => selectColor("#C71585")}>Marking Scheme</button>
+          <button onClick={() => selectColor("yellow")} className="yellow-button">Marking Scheme Image</button>
+        </div>
+        <div style={{ marginTop: "10px" }}>
+          <button onClick={clearCanvas}>Clear</button>
+          <button onClick={undoLast}>Undo</button>
+          <button onClick={saveDrawing}>Save</button>
+        </div>
 
-        <button onClick={() => selectColor("Yellow")} style={{ backgroundColor: "Yellow", color: "black", marginRight: "5px" }}>
-          Yellow
-        </button>
-      </div>
-      {/* Canvas */}
-      <div style={{ position: "relative" }}>
-        <CanvasDraw
-          ref={canvasRef}
-          brushColor="black"
-          brushRadius={4}
-          lazyRadius={4}
-          canvasWidth={canvasDimensions.width}
-          canvasHeight={canvasDimensions.height}
-          imgSrc={imageSrc || undefined}
-          style={{ border: "1px solid black", marginTop: "20px", padding: "10px" }}
-        />
-        {/* Rectangle Drawing Canvas */}
-        <canvas
-          ref={canvasOverlayRef}
-          onMouseDown={startDrawingRectangle}
-          onMouseMove={drawRectangle}
-          onMouseUp={stopDrawingRectangle}
-          onMouseLeave={stopDrawingRectangle}
-          style={{
-            position: "absolute",
-            top: "10px",
-            left: "10px",
-            border: "1px solid transparent", // Transparent border to keep it over the main canvas
-          }}
-        />
-      </div>
-      {/* Controls */}
-      <div style={{ marginTop: "10px" }}>
-        <button onClick={clearCanvas}>Clear Canvas</button>
-        <button onClick={undoLast}>Undo Last Rectangle</button>
-        <button onClick={saveDrawing}>Save Drawing</button>
+        {/* Canvas Section */}
+        <div style={{ position: "relative" }}>
+          <div style={{ marginTop: "20px", padding: "10px" }}>
+            <CanvasDraw
+              ref={canvasRef}
+              brushColor="black"
+              canvasWidth={canvasDimensions.width}
+              canvasHeight={canvasDimensions.height}
+              imgSrc={imageSrc || undefined}
+
+            />
+          </div>
+          <canvas
+            ref={canvasOverlayRef}
+            onMouseDown={startDrawingRectangle}
+            onMouseMove={drawRectangle}
+            onMouseUp={stopDrawingRectangle}
+            onMouseLeave={stopDrawingRectangle}
+            style={{
+              position: "absolute",
+              top: "10px",
+              left: "10px",
+              border: "1px solid transparent",
+            }}
+          />
+        </div>
       </div>
     </div>
   );
 };
+
 export default DrawPage;

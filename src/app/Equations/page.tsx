@@ -5,13 +5,21 @@ import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 
-class RichTextEditor extends Component {
-  state = {
-    editorState: EditorState.createEmpty(),
-    htmlContent: '',
-  };
+interface State {
+  editorState: EditorState;
+  htmlContent: string;
+}
 
-  onEditorStateChange = (editorState: { getCurrentContent: () => any; }) => {
+class RichTextEditor extends Component<{}, State> {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      editorState: EditorState.createEmpty(),
+      htmlContent: '',
+    };
+  }
+
+  onEditorStateChange = (editorState: EditorState) => {
     const htmlContent = draftToHtml(convertToRaw(editorState.getCurrentContent()));
     this.setState({ editorState, htmlContent });
   };
@@ -21,8 +29,8 @@ class RichTextEditor extends Component {
     const contentState = editorState.getCurrentContent();
     const selectionState = editorState.getSelection();
     const contentStateWithText = Modifier.insertText(contentState, selectionState, text);
-    const newEditorState = EditorState.push(editorState, contentStateWithText, 'insert-characters');
-    this.setState({ editorState: newEditorState });
+    const newEditorState = EditorState.createWithContent(contentStateWithText);
+    // this.setState({ editorState: newEditorState });
   };
 
   logEquation = () => {
@@ -31,14 +39,11 @@ class RichTextEditor extends Component {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = htmlContent;
 
-      let plainText = tempDiv.innerText || tempDiv.textContent;
-
-      plainText = plainText.replace(/[\n]/g, ' ');
-
-      console.log({ equation: plainText });
+      const plainText = tempDiv.innerText || tempDiv.textContent || '';
+      const formattedText = plainText.replace(/[\n]/g, ' ').trim(); 
+      console.log({ equation: formattedText });
     }
   };
-
 
   convertToLatex = () => {
     if (typeof window !== 'undefined') {
@@ -47,9 +52,9 @@ class RichTextEditor extends Component {
       tempDiv.innerHTML = htmlContent;
 
       let latexContent = tempDiv.innerHTML
-        .replace(/<p><\/p>/g, '')  // Remove empty <p> tags
-        .replace(/<p>(.*?)<\/p>/g, '$1')  // Remove <p> tags but keep content
-        .replace(/\n/g, '')         // Remove newline characters
+        .replace(/<p><\/p>/g, '') // Remove empty <p> tags
+        .replace(/<p>(.*?)<\/p>/g, '$1') // Remove <p> tags but keep content
+        .replace(/\n/g, '') // Remove newline characters
         .replace(/<sup>(.*?)<\/sup>/g, '^{$1}')
         .replace(/<sub>(.*?)<\/sub>/g, '_{$1}')
         .replace(/<br\s*\/?>/g, '\\\\')
