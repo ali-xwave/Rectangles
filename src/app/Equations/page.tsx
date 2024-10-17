@@ -10,8 +10,8 @@ interface State {
   htmlContent: string;
 }
 
-class RichTextEditor extends Component<object, State> {
-  constructor(props: object) {
+class RichTextEditor extends Component<{}, State> {
+  constructor(props: {}) {
     super(props);
     this.state = {
       editorState: EditorState.createEmpty(),
@@ -61,7 +61,7 @@ class RichTextEditor extends Component<object, State> {
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = htmlContent;
 
-      let latexContent = tempDiv.innerHTML
+      const latexContent = tempDiv.innerHTML
         .replace(/<p><\/p>/g, "") // Remove empty <p> tags
         .replace(/<p>(.*?)<\/p>/g, "$1") // Keep content only
         .replace(/\n/g, "") // Remove newlines
